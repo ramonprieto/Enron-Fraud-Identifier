@@ -66,7 +66,7 @@ labels, features = targetFeatureSplit(data)
 
 #Split train and test data
 features_train, features_test, labels_train, labels_test = \
-    train_test_split(features, labels, test_size=0.3, random_state=42)
+    train_test_split(features, labels, test_size=0.3, random_state=42, stratify = labels)
 
 #Select and tune algorithm
 from sklearn.feature_selection import SelectKBest
@@ -89,7 +89,7 @@ pipeline = Pipeline([("selector", selector), ("pca", pca), ("gnb", gnb)])
 #parameters to be changed in grid search
 params_grid =  {
 				"pca__n_components": [5], 
-				"selector__k": [11], 
+				"selector__k": [10], 
 				}
 
 gs = GridSearchCV(pipeline, params_grid, cv = cv, scoring = "f1")
@@ -100,7 +100,7 @@ clf = gs.best_estimator_
 clf.fit(features_train, labels_train)
 pred = clf.predict(features_test)
 
-#Get feature importance scores and features used in the model
+#Get features importance score and features used in the model
 if False:
 	feature_importances = clf.named_steps["selector"].scores_
 	i = 1
