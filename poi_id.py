@@ -23,6 +23,7 @@ with open("final_project_dataset.pkl", "r") as data_file:
 #Remove the total from the data 
 data_dict.pop("TOTAL", 0)
 data_dict.pop("THE TRAVEL AGENCY IN THE PARK", 0)
+data_dict.pop("LOCKHART EUGENE E", 0)
 
 ### Task 3: Create new feature(s)
 for name in data_dict:
@@ -37,6 +38,13 @@ for name in data_dict:
 	else:
 		data_dict[name]["from_poi_ratio"] = float(from_this_person_to_poi)/(from_messages+from_this_person_to_poi)
 		data_dict[name]["to_poi_ratio"] = float(from_poi_to_this_person)/(to_messages+from_poi_to_this_person)
+
+#Remove poi data to prevent data leakage
+if True:
+	poi_data = ["from_poi_ratio", "to_poi_ratio", "from_poi_to_this_person", 
+				"from_this_person_to_poi", "shared_receipt_with_poi"]
+	for feature in poi_data:
+		excluded_features.append(feature)
 
 #Get all features into feature_list
 for name in data_dict:
@@ -69,30 +77,42 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.metrics import accuracy_score, recall_score, precision_score
 from sklearn.naive_bayes import GaussianNB
+
 cv = StratifiedShuffleSplit(n_splits = 1000, test_size = .3, random_state = 42)
 
 scaler = MinMaxScaler()
-selector = SelectKBest(k = 4)
-pca = PCA(n_components = 15)
+selector = SelectKBest(k = 11)
+pca = PCA(n_components = 5)
 gnb = GaussianNB()
 pipeline = Pipeline([("selector", selector), ("pca", pca), ("gnb", gnb)])
 
 #parameters to be changed in grid search
 params_grid =  {
-				"pca__n_components": [4], 
-				"selector__k": [15], 
+				"pca__n_components": [5], 
+				"selector__k": [11], 
 				}
 
 gs = GridSearchCV(pipeline, params_grid, cv = cv, scoring = "f1")
 gs.fit(features, labels)
 
-
 #Select optimal classifier
-print gs.best_estimator_
 clf = gs.best_estimator_
 clf.fit(features_train, labels_train)
 pred = clf.predict(features_test)
 
+#Get feature importance scores and features used in the model
+if False:
+	feature_importances = clf.named_steps["selector"].scores_
+	i = 1
+	for score in feature_importances:
+		print "%s has a score of: %f" % (features_list[i], score)
+		i+=1
+	features_selected = clf.named_steps["selector"].get_support()
+	i = 1
+	for feature in features_selected:
+		if feature == True:
+			print features_list[i]
+		i+=1
 
 ### Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
