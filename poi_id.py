@@ -2,7 +2,8 @@
 
 import sys
 import pickle
-import matplotlib.pyplot
+from matplotlib import pyplot as plt
+import numpy as np
 sys.path.append("/Users/ramonprieto/Google Drive/Data Analysis/machine-learning/mini-projects/ud120-projects/tools/")
 
 from feature_format import featureFormat, targetFeatureSplit
@@ -81,15 +82,15 @@ from sklearn.naive_bayes import GaussianNB
 cv = StratifiedShuffleSplit(n_splits = 1000, test_size = .3, random_state = 42)
 
 scaler = MinMaxScaler()
-selector = SelectKBest(k = 11)
-pca = PCA(n_components = 5)
+selector = SelectKBest()
+pca = PCA()
 gnb = GaussianNB()
 pipeline = Pipeline([("selector", selector), ("pca", pca), ("gnb", gnb)])
 
 #parameters to be changed in grid search
 params_grid =  {
-				"pca__n_components": [5], 
-				"selector__k": [10], 
+				"pca__n_components": [6], 
+				"selector__k": [9], 
 				}
 
 gs = GridSearchCV(pipeline, params_grid, cv = cv, scoring = "f1")
@@ -100,13 +101,9 @@ clf = gs.best_estimator_
 clf.fit(features_train, labels_train)
 pred = clf.predict(features_test)
 
-#Get features importance score and features used in the model
+#Get features importance scores plot and features used in the model
 if False:
 	feature_importances = clf.named_steps["selector"].scores_
-	i = 1
-	for score in feature_importances:
-		print "%s has a score of: %f" % (features_list[i], score)
-		i+=1
 	features_selected = clf.named_steps["selector"].get_support()
 	i = 1
 	for feature in features_selected:
@@ -114,6 +111,13 @@ if False:
 			print features_list[i]
 		i+=1
 
+	feature_importances = sorted(feature_importances)
+	y_pos = np.arange(len(features_list[1:]))
+	plt.bar(y_pos, feature_importances, align = "center")
+	plt.xticks(y_pos, features_list[1:], rotation = 90)
+	plt.ylabel("Importance Scores")
+
+	plt.show()
 ### Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
 ### that the version of poi_id.py that you submit can be run on its own and
