@@ -10,7 +10,7 @@ from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.cross_validation import train_test_split
 
-### Task 1: Select what features you'll use.
+### Select features.
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
 features_list = ['poi'] 
@@ -20,13 +20,13 @@ excluded_features = ["loan_advances", "email_address", "poi"]
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
 
-### Task 2: Remove outliers
+### Remove outliers
 #Remove the total from the data 
 data_dict.pop("TOTAL", 0)
 data_dict.pop("THE TRAVEL AGENCY IN THE PARK", 0)
 data_dict.pop("LOCKHART EUGENE E", 0)
 
-### Task 3: Create new feature(s)
+### Create new feature(s)
 for name in data_dict:
 	from_this_person_to_poi = data_dict[name]["from_this_person_to_poi"]
 	from_messages = data_dict[name]["from_messages"]
@@ -118,12 +118,10 @@ if False:
 	plt.ylabel("Importance Scores")
 
 	plt.show()
-### Dump your classifier, dataset, and features_list so anyone can
-### check your results. You do not need to change anything below, but make sure
-### that the version of poi_id.py that you submit can be run on its own and
-### generates the necessary .pkl files for validating your results.
+### Dump the classifier, dataset, and features_list so anyone can
+### check your results.
 dump_classifier_and_data(clf, my_dataset, features_list)
 
-#Test your results using test classifier
+#Test results using test classifier
 from tester import test_classifier
 test_classifier(clf, my_dataset, features_list)
